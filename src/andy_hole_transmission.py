@@ -9,13 +9,13 @@ from tqdm import tqdm
 import math
 from IPython import embed
 
-resolution = 20
+resolution = 10
 
 n_air = 1.0000003
 n_Si = 3.48
 n_SiO2 = 1.45
 
-a = 0.5   # lattice period 
+a = 0.5   # lttice period 
 
 pml_thickness = 0.780
 Si = 5       # eventually we're going to vary this value so the following values will change dynamically
@@ -113,45 +113,55 @@ geometry.append(mp.Block(size=mp.Vector3(mp.inf,mp.inf,SiO2),
 pbar = tqdm(total=num_holes,leave=False)
 min = 0.0
 max = 0.240
-for i,radius in enumerate(np.linspace(min,max,num=num_holes)):
-    geometry.append(mp.Cylinder(radius=radius,
-                        height=cell_z,
-                        axis=mp.Vector3(0,0,1),
-                        center=mp.Vector3(0,0,0),
-                        material=mp.Medium(index=n_air)))
 
-    sim = mp.Simulation(cell_size=cell_size,
-                        geometry=geometry,
-                        sources=sources,
-                        k_point=k_point,
-                        boundary_layers=pml_layers,
-                        symmetries=symmetries,
-                        resolution=resolution)
-    
-    flux_object = sim.add_flux(freq, df, nfreq, fr)  
+#for i,radius in enumerate(np.linspace(min,max,num=num_holes)):
+#    geometry.append(mp.Cylinder(radius=radius,
+#                        height=cell_z,
+#                        axis=mp.Vector3(0,0,1),
+#                        center=mp.Vector3(0,0,0),
+#                        material=mp.Medium(index=n_air)))
+#
+#    sim = mp.Simulation(cell_size=cell_size,
+#                        geometry=geometry,
+#                        sources=sources,
+#                        k_point=k_point,
+#                        boundary_layers=pml_layers,
+#                        symmetries=symmetries,
+#                        resolution=resolution)
+#    
+#    flux_object = sim.add_flux(freq, df, nfreq, fr)  
+#
+#    sim.run(until=200)
+#    
+#    res = sim.get_eigenmode_coefficients(flux_object, [1], eig_parity=mp.ODD_Y)
+#    coeffs = res.alpha
+#
+#    flux = abs(coeffs[0,0,0]**2)
+#    phase = np.angle(coeffs[0,0,0]) 
+#    
+#    data[0,i] = radius
+#    data[1,i] = flux
+#    data[2,i] = phase
+#    
+#    if(radius!=max):
+#        sim.reset_meep()
+#        print(f"i= {i},radius={radius}")
+#        geometry.pop(-1)
+#    pbar.update(1)
+#pbar.close()
 
-    sim.run(until=200)
-    
-    res = sim.get_eigenmode_coefficients(flux_object, [1], eig_parity=mp.ODD_Y)
-    coeffs = res.alpha
-
-    flux = abs(coeffs[0,0,0]**2)
-    phase = np.angle(coeffs[0,0,0]) 
-    
-    data[0,i] = radius
-    data[1,i] = flux
-    data[2,i] = phase
-    
-    if(radius!=max):
-        sim.reset_meep()
-        print(f"i= {i},radius={radius}")
-        geometry.pop(-1)
-    pbar.update(1)
-pbar.close()
 
 radii = data[0,:]
 flux_list = data[1,0:] / initial_flux
 phase_list = data[2,0:]
+results_path='/develop/results'
+file_name='data.pkl'
+name = os.path.join(results_path,file_name)
 
-pickle.dump(data, open("data.pkl","wb"))
-pickle.dump(initial_flux, open("initial_flux.pkl","wb"))
+from IPython import embed
+embed()
+
+pickle.dump(data, open(name, "wb"))
+file_name='initial_flux.pkl'
+name = os.path.join(results_path,file_name)
+pickle.dump(initial_flux, open(name, "wb"))
